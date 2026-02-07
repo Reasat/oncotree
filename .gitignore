@@ -1,0 +1,36 @@
+# Standard
+dev/
+data/cache/
+__pycache__/
+.idea/
+.DS_Store
+.env
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Specialized
+.ipynb_checkpoints/
+.git.bfg-report/
+*ignore/
+
+# Inputs (downloaded files)
+oncotree_*.json
+oncotree_*.pretty.json
+
+# Outputs
+/*.json
+/*.obo
+/*.owl
+/*.tsv
+/*.ttl
+/*.txt
+!requirements*.txt
+!README.md
+!LICENSE.md
+
+# Virtual environments
+venv/
+env/
+ENV/
