@@ -109,4 +109,8 @@ Code is implemented in `oncotree2obo/main.py`
 
 `sssom parse oncotree.json -I obographs-json -m data/metadata.sssom.yml -o oncotree.sssom.tsv` 
 
+## Logs
+
+While each of these steps are running, print logs. In the log, note the Nodes counts and externalReferences counts from each of the sources.
+
 **Typical real-data example (API latest):** Nodes ≈ 897, # externalReferences ≈ 1358, externalReferences.NCI =  666, externalReferences.UMLS = 692.
