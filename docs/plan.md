@@ -1,12 +1,16 @@
-# Pipeline plan: from API to artefacts
+# Pipeline plan: from OncoTree source files to oncotree.owl, oncotree.ttl, oncotree.sssom.tsv
 
 The sequence of actions, inputs/outputs, and how entity counts change.
 
 ---
 
-## 1. Get OncoTree data (API or file)
+## 1. Get OncoTree data 
 
-We get list of nodes from the API call. This is saved in an in-memory json. Code is implemented in `oncotree2obo/main.py`.
+Code is implemented in `oncotree2obo/main.py`.
+
+### Through API
+
+We get a flat list of nodes from the API call.  
 
 ```json
 {
@@ -32,17 +36,41 @@ We get list of nodes from the API call. This is saved in an in-memory json. Code
   },
 ```
 
-## Json is converted to a in-memory graph
+### Through file
 
-Code is implemented in `oncotree2obo/main.py`. 
+We get a nested dictionary that needs to be flattened for further processing.
 
+```json
+{
+  "TISSUE": {
+    "code": "TISSUE",
+    "name": "Tissue",
+    "externalReferences": { "UMLS": ["C0040300"], "NCI": ["C12801"] },
+    "children": {
+      "PANCREAS": {
+        "code": "PANCREAS",
+        "name": "Pancreas",
+        "parent": "TISSUE",
+        "externalReferences": { "UMLS": ["C0030274"], "NCI": ["C12699"] },
+        "children": {}
+      }
+    }
+  }
+}
+```
 
-Flattening (for nested dict)
-API: tree is a list of nodes. The parser walks the list and for each node sets parent_code = node["parent"] (so "parent": "PANCREAS" → parent_code = "PANCREAS").
-File (nested): tree is a dict (e.g. root with children). The parser walks recursively and sets parent_code from the parent’s code.
-Result for this node: same keys, plus parent_code: "PANCREAS". Fields like color, children, history, revocations, precursors are not used when building the graph.
+This is saved in an in-memory json.
 
-Loop over flat list of nodes add to a RDF graph object.
+## Json is converted to an in-memory graph
+
+Code is implemented in `oncotree2obo/main.py`.
+
+**Flattening** (handles both API and file shapes)
+- **API:** tree is a list of nodes. The parser walks the list and for each node sets `parent_code = node["parent"]` (e.g. `"parent": "PANCREAS"` → `parent_code: "PANCREAS"`).
+- **File (nested):** tree is a dict (e.g. root with `children`). The parser walks recursively and sets `parent_code` from the parent's code.
+- **Result:** each node keeps the same keys, plus `parent_code`. Fields like `color`, `children`, `history`, `revocations`, `precursors` are not used when building the graph.
+
+Loop over the flat dictionary of nodes (code → node) and add each to the RDF graph.
 
 The selected fields stored are
 
@@ -67,10 +95,11 @@ The selected fields stored are
 | `revocations` | Always empty in current data; Not propagated |
 | `precursors` | Always empty in current data; not propagated |
 
-After the graph creation, run verification makes sure the node numbers and total exactmatches are equal to json. Total exactmatched is calculated by summing `externalReferences.NCI` and `externalReferences.UMLS`.
+After the graph creation, run verification to ensure the node numbers and total exactmatches are equal to json. Total exactmatched is calculated by summing `externalReferences.NCI` and `externalReferences.UMLS`.
 
 ## Run `graph.serialize()` to create `.owl` and `.ttl`
 
+Code is implemented in `oncotree2obo/main.py`
 
 ```xml
 <!-- OWL/RDF/XML example -->
@@ -99,8 +128,6 @@ oncotree:PANET a owl:Class,
         ncit:C27720 .
 ```
 
-Code is implemented in `oncotree2obo/main.py`
-
 ## Convert OWL to obographs JSON using robot
 
 `robot convert -i oncotree.owl -o oncotree.json`
@@ -111,6 +138,6 @@ Code is implemented in `oncotree2obo/main.py`
 
 ## Logs
 
-While each of these steps are running, print logs. In the log, note the Nodes counts and externalReferences counts from each of the sources.
+After the execution of each of these steps, print logs. In the log, note the Node counts and externalReferences counts from each of the sources.
 
-**Typical real-data example (API latest):** Nodes ≈ 897, # externalReferences ≈ 1358, externalReferences.NCI =  666, externalReferences.UMLS = 692.
+**Typical real-data example (API, oncotree_2025_10_03):** Nodes ≈ 897, # externalReferences ≈ 1358, externalReferences.NCI =  666, externalReferences.UMLS = 692.
