@@ -6,7 +6,7 @@ The sequence of actions, inputs/outputs, and how entity counts change.
 
 ---
 
-## 1. Get OncoTree data 
+## Get OncoTree data 
 
 Code is implemented in `oncotree2obo/main.py`.
 
