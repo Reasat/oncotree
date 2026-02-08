@@ -1,4 +1,6 @@
-# Pipeline plan: from OncoTree source files to oncotree.owl, oncotree.ttl, oncotree.sssom.tsv
+# Pipeline plan
+
+From OncoTree source files to oncotree.owl, oncotree.ttl, oncotree.sssom.tsv
 
 The sequence of actions, inputs/outputs, and how entity counts change.
 
