@@ -10,6 +10,14 @@ The sequence of actions, inputs/outputs, and how entity counts change.
 
 Code is implemented in `oncotree2obo/main.py`.
 
+OncoTree data has these two source format
+
+| What | Schema | Top-level type | Format |
+|------|--------|----------------|---------|
+| API | ApiResponse | array | Response is a list of nodes: `[ node1, node2, ... ]` |
+| File | FileFormat | object | File is a map from root code(s) to root node(s): `{ "TISSUE": { ... } }` |
+
+
 ### Through API
 
 We get a flat list of nodes from the API call.  
