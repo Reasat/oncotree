@@ -59,7 +59,7 @@ We get a nested dictionary that needs to be flattened for further processing.
 }
 ```
 
-This is saved in an in-memory json.
+In both cases, this is saved in an in-memory json.
 
 ## Json is converted to an in-memory graph
 
@@ -138,6 +138,6 @@ oncotree:PANET a owl:Class,
 
 ## Logs
 
-After the execution of each of these steps, print logs. In the log, note the Node counts and externalReferences counts from each of the sources.
+During the execution of each step, print logs. In the log, note the Node counts and externalReferences counts from each of the sources.
 
 **Typical real-data example (API, oncotree_2025_10_03):** Nodes ≈ 897, # externalReferences ≈ 1358, externalReferences.NCI =  666, externalReferences.UMLS = 692.
