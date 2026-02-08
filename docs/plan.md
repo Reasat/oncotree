@@ -99,7 +99,7 @@ The selected fields stored are
 
 After the graph creation, run verification to ensure the node numbers and total exactmatches are equal to json. Total exactmatched is calculated by summing `externalReferences.NCI` and `externalReferences.UMLS`.
 
-## Run `graph.serialize()` to create `.owl` and `.ttl`
+## Run `graph.serialize()` to create `.owl` and `.ttl` in the `mappings` folder
 
 Code is implemented in `oncotree2obo/main.py`
 
@@ -132,11 +132,13 @@ oncotree:PANET a owl:Class,
 
 ## Convert OWL to obographs JSON using robot
 
-`robot convert -i oncotree.owl -o oncotree.json`
+`robot convert -i mappings/oncotree.owl -o mappings/oncotree.json`
 
 ## Parse to SSSOM TSV (sssom)
 
-`sssom parse oncotree.json -I obographs-json -m data/metadata.sssom.yml -o oncotree.sssom.tsv` 
+`sssom parse oncotree.json -I obographs-json -m data/metadata.sssom.yml -o mappings/oncotree.sssom.tsv` 
+
+## Automate the actions in a `makefile`
 
 ## Logs
 
