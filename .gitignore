@@ -34,3 +34,4 @@ oncotree_*.pretty.json
 venv/
 env/
 ENV/
+.cursor/
