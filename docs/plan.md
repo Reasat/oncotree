@@ -8,7 +8,7 @@ The sequence of actions, inputs/outputs, and how entity counts change.
 
 ---
 
-## Get OncoTree data 
+## Get OncoTree data
 
 Code is implemented in `oncotree2obo/main.py`.
 
@@ -299,7 +299,7 @@ This verification runs during `python3 -m oncotree2obo` immediately after buildi
 
 ### Verify OBOGraphs JSON + SSSOM outputs (format + row-count sanity)
 - **OBOGraphs JSON:** confirm the produced `mappings/oncotree.json` is in OBOGraphs JSON schema (not JSON-LD).
-- **SSSOM TSV:** row count should match `mappings_total` (total exact matches) from the RDF graph.
+- **SSSOM TSV:** row count should match `mappings_total` (total exact matches) from the RDF graph **unless** cleaning/dedup/filtering occurs; if it does not match, log a breakdown.
 - **Logging when counts don’t match:** `sssom parse` may remove mappings during cleaning (e.g. unknown prefixes). If the SSSOM row count is lower than expected, print/log a breakdown of what changed, e.g.:
   - expected `mappings_total` vs produced TSV row count
   - number dropped due to unknown prefixes / prefix cleaning
@@ -354,7 +354,7 @@ During the execution of each step, print logs. In the log, note the term counts 
 
 Behavior to be defined for:
 - Missing or null `parent`
-- Obsolete code not in JSON and no name available. Example: LEUK which was revoked and the node omitted. Either look up previous versions or pass generic "obsolete term name" for these terms.
+- Obsolete code not in JSON and no name available. Example: LEUK which was revoked and the term omitted. Either look up previous versions or pass generic "obsolete term name" for these terms.
 - Self-revocation (ignore when building obsolete terms)
 - Duplicate IDs in external reference arrays
 - Cycles in parent hierarchy
