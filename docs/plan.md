@@ -1,6 +1,6 @@
 # Pipeline plan
 
-From OncoTree source file to `oncotree.owl`, `oncotree.ttl`, `oncotree.sssom.tsv`
+From OncoTree source file to `mappings/oncotree.owl`, `mappings/oncotree.ttl`, `mappings/oncotree.sssom.tsv`
 
 The sequence of actions, inputs/outputs, and how entity counts change.
 
@@ -150,6 +150,8 @@ For each term code and its term, look at revocations and precursors and get thei
 For every `obsolete_code` in those lists, record the codes that are replacement for it, to create `replacement_codes` list. Figure out obo:IAO_0100001 or oboInOwl:consider based on this list.
 
 The fields for **Obsolete term** `owl:deprecated true`, `rdfs:label` "obsolete {original name}", replacement link (IAO_0100001 or consider), no `rdfs:subClassOf` (orphaned term).
+
+**Missing obsolete term names (implemented):** If an obsolete code is referenced by revocations/precursors but is not present in the source JSON (common with API outputs), still create the obsolete term anyway, using a minimal label derived from the code (e.g. `obsolete LEUK`). This may need revisiting if better name lookup is required.
 
 Print how many obsolete terms were made, how many have direct replacements (obo:IAO_0100001) and how many have oboInOwl:consider 
 
@@ -311,7 +313,7 @@ If SSSOM does not emit these details by default, add a small post-step summary s
 ### Standalone verification command (`make verify`)
 `python3 -m oncotree2obo.verify` compares:
 - **Expected:** counts from API (or from `-j/--json` if a JSON file is provided)
-- **Actual:** counts parsed from an on-disk OWL/TTL file (`oncotree.owl` by default, or `-o/--owl`)
+- **Actual:** counts parsed from an on-disk OWL/TTL file (`mappings/oncotree.owl` by default, or `-o/--owl`)
 
 
 ## Automate the actions in a Makefile
@@ -354,7 +356,7 @@ During the execution of each step, print logs. In the log, note the term counts 
 
 Behavior to be defined for:
 - Missing or null `parent`
-- Obsolete code not in JSON and no name available. Example: LEUK which was revoked and the term omitted. Either look up previous versions or pass generic "obsolete term name" for these terms.
+- Obsolete code not in JSON and no name available (implemented as minimal-label fallback; may need revisiting if better name lookup is required).
 - Self-revocation (ignore when building obsolete terms)
 - Duplicate IDs in external reference arrays
 - Cycles in parent hierarchy
