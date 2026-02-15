@@ -288,7 +288,7 @@ Verification is done at *major transforms* (especially where information can be 
 - **Expected:** Counts from the same JSON used as input (API response or local JSON file).
 - **Actual:** Counts from the in-memory RDF graph.
 - **Checks:**
-  - **Classes:** total `owl:Class` with OncoTree IRI prefix = active terms + obsolete terms
+  - **Classes:** report `classes_active`, `classes_obsolete`, and `classes = classes_active + classes_obsolete`
   - **Mappings totals (B):** total `skos:exactMatch` triples to NCIT + UMLS
   - **Coverage (A):** number of **unique active terms** with ≥1 NCIT mapping; number of **unique active terms** with ≥1 UMLS mapping (each term counts once, regardless of how many IDs it has)
 

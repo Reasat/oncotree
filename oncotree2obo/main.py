@@ -23,11 +23,13 @@ from rdflib.namespace import DC
 
 from oncotree2obo.config import ONCOTREE_OWL_PATH, ONCOTREE_TTL_PATH, ROOT_DIR
 from oncotree2obo.namespaces import (
-    ONCOTREE, BIOLINK, NCIT, UMLS, ONCOTREE_ONTOLOGY_IRI
+    ONCOTREE, BIOLINK, NCIT, UMLS, ONCOTREE_ONTOLOGY_IRI, OBO,
+    IAO_0100001, OBOINOWL,
 )
 from oncotree2obo.parsers.oncotree_json_parser import (
     download_oncotree_json, load_oncotree_json, flatten_tree, extract_mappings
 )
+from oncotree2obo.verify import expected_from_json, actual_from_graph
 
 # Logging
 LOG = logging.getLogger(__name__)
@@ -95,6 +97,45 @@ def add_oncotree_class(graph: Graph, code: str, name: str,
         graph.add((class_uri, RDFS.comment, Literal(f"Level: {level}")))
 
 
+def add_obsolete_class(
+    graph: Graph,
+    code: str,
+    name: str,
+    replacement_codes: list[str],
+    flat_nodes: dict,
+):
+    """
+    Add an obsolete OncoTree class to the graph.
+
+    Args:
+        graph: RDF graph
+        code: Obsolete OncoTree code
+        name: Original display name (prefixed with "obsolete ")
+        replacement_codes: List of active codes that replace this term
+        flat_nodes: Full node map for validation (replacement codes must exist)
+
+    Raises:
+        ValueError: If any replacement code is not in flat_nodes
+    """
+    for repl in replacement_codes:
+        if repl not in flat_nodes:
+            raise ValueError(
+                f"Replacement code '{repl}' for obsolete '{code}' not found in node map. "
+                "Ensure the input tree includes all active replacement terms."
+            )
+
+    class_uri = ONCOTREE[code]
+    graph.add((class_uri, RDF.type, OWL.Class))
+    graph.add((class_uri, RDFS.label, Literal(f"obsolete {name}")))
+    graph.add((class_uri, OWL.deprecated, Literal(True)))
+
+    if len(replacement_codes) == 1:
+        graph.add((class_uri, IAO_0100001, ONCOTREE[replacement_codes[0]]))
+    else:
+        for repl in replacement_codes:
+            graph.add((class_uri, OBOINOWL.consider, ONCOTREE[repl]))
+
+
 def add_mappings(graph: Graph, code: str, external_refs: dict):
     """
     Add external reference mappings to the graph.
@@ -121,22 +162,25 @@ def add_mappings(graph: Graph, code: str, external_refs: dict):
         graph.add((class_uri, SKOS.exactMatch, umls_uri))
 
 
-def oncotree2obo(json_file: Optional[Path] = None, version: Optional[str] = None):
+def oncotree2obo(
+    json_file: Optional[Path] = None,
+    version: Optional[str] = None,
+):
     """
     Convert OncoTree JSON to OWL ontology.
-    
+
     Args:
         json_file: Optional path to local JSON file. If None, downloads from API.
         version: Optional version string for API download.
     """
     LOG.info("Starting OncoTree to OBO conversion")
-    
+
     # Load or download OncoTree data
     if json_file and json_file.exists():
         tree_data = load_oncotree_json(json_file)
     else:
         tree_data = download_oncotree_json(version)
-    
+
     # Create RDF graph
     graph = Graph()
     
@@ -148,19 +192,36 @@ def oncotree2obo(json_file: Optional[Path] = None, version: Optional[str] = None
     graph.bind("owl", OWL)
     graph.bind("rdfs", RDFS)
     graph.bind("skos", SKOS)
+    graph.bind("obo", OBO)
+    graph.bind("oboInOwl", OBOINOWL)
     
     # Add ontology metadata
     create_ontology_metadata(graph)
     
     # Flatten tree structure
     flat_nodes = flatten_tree(tree_data)
-    LOG.info(f"Processing {len(flat_nodes)} OncoTree nodes")
-    
-    # Process each node
+    LOG.info(f"Processing {len(flat_nodes)} OncoTree terms")
+
+    # Collect obsolete codes (from revocations + precursors)
+    obsolete_codes: set[str] = set()
+    obsolete_to_replacements: dict[str, list[str]] = {}
     for code, node in flat_nodes.items():
         if not isinstance(node, dict) or 'code' not in node:
             continue
-        
+        for obsolete_code in (node.get('revocations') or []) + (node.get('precursors') or []):
+            # Ignore self-revocation / self-precursor (code appears in its own revocations list)
+            if obsolete_code == code:
+                continue
+            obsolete_codes.add(obsolete_code)
+            obsolete_to_replacements.setdefault(obsolete_code, []).append(code)
+
+    # Process each active node (skip obsolete codes)
+    for code, node in flat_nodes.items():
+        if not isinstance(node, dict) or 'code' not in node:
+            continue
+        if code in obsolete_codes:
+            continue
+
         name = node.get('name', '')
         parent_code = node.get('parent_code')
         main_type = node.get('mainType')
@@ -176,12 +237,48 @@ def oncotree2obo(json_file: Optional[Path] = None, version: Optional[str] = None
         # Add mappings
         if external_refs:
             add_mappings(graph, code, external_refs)
-    
+
+    # Add obsolete classes
+    for obsolete_code, replacement_codes in obsolete_to_replacements.items():
+        if obsolete_code in flat_nodes:
+            obsolete_node = flat_nodes[obsolete_code]
+            name = obsolete_node.get('name') or obsolete_code
+        else:
+            # API may omit revoked terms; fall back to using the code as a label.
+            name = obsolete_code
+        add_obsolete_class(
+            graph, obsolete_code, name, replacement_codes, flat_nodes
+        )
+
+    # Verify in-memory: class/mapping counts must match expected from the same JSON source
+    expected = expected_from_json(tree_data)
+    actual = actual_from_graph(graph)
+    if (
+        expected["classes"] != actual["classes"]
+        or expected["classes_active"] != actual["classes_active"]
+        or expected["classes_obsolete"] != actual["classes_obsolete"]
+        or expected["mappings_total"] != actual["mappings_total"]
+        or expected["terms_with_ncit"] != actual["terms_with_ncit"]
+        or expected["terms_with_umls"] != actual["terms_with_umls"]
+    ):
+        LOG.error(
+            "Verification failed: expected %s, got %s",
+            expected,
+            actual,
+        )
+        raise SystemExit(1)
+    LOG.info(
+        "Verification passed: %s",
+        actual,
+    )
+
     # Serialize to TTL
+    ONCOTREE_TTL_PATH.parent.mkdir(parents=True, exist_ok=True)
     LOG.info(f"Writing TTL to {ONCOTREE_TTL_PATH}")
     graph.serialize(destination=str(ONCOTREE_TTL_PATH), format='turtle')
     
     # Serialize to OWL
+    ONCOTREE_OWL_PATH.parent.mkdir(parents=True, exist_ok=True)
     LOG.info(f"Writing OWL to {ONCOTREE_OWL_PATH}")
     graph.serialize(destination=str(ONCOTREE_OWL_PATH), format='xml')
     
@@ -189,16 +286,3 @@ def oncotree2obo(json_file: Optional[Path] = None, version: Optional[str] = None
     LOG.info(f"Created {ONCOTREE_TTL_PATH}")
     LOG.info(f"Created {ONCOTREE_OWL_PATH}")
 
-
-if __name__ == '__main__':
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='Convert OncoTree JSON to OWL')
-    parser.add_argument('--json-file', type=Path, help='Path to local OncoTree JSON file')
-    parser.add_argument('--version', type=str, help='OncoTree version to download')
-    parser.add_argument('--use-cache', action='store_true', 
-                       help='Use cached data if available (not implemented yet)')
-    
-    args = parser.parse_args()
-    
-    oncotree2obo(json_file=args.json_file, version=args.version)

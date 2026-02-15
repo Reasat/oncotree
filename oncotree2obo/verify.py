@@ -16,73 +16,126 @@ from oncotree2obo.parsers.oncotree_json_parser import (
 )
 
 
+def _obsolete_codes_from_tree(tree_data: Dict[str, Any]) -> set[str]:
+    """Compute set of obsolete codes (from revocations + precursors)."""
+    flat_nodes = flatten_tree(tree_data)
+    obsolete = set()
+    for node in flat_nodes.values():
+        if isinstance(node, dict):
+            code = node.get("code")
+            for c in (node.get("revocations") or []) + (node.get("precursors") or []):
+                # Ignore self-revocation / self-precursor
+                if code and c == code:
+                    continue
+                obsolete.add(c)
+    return obsolete
+
+
 def expected_from_json(tree_data: Dict[str, Any]) -> Dict[str, int]:
     """
     Compute expected entity counts from OncoTree JSON (same logic as main.py).
 
-    Returns dict with: classes, mappings_ncit, mappings_umls, mappings_total.
+    Returns dict with:
+      - classes, classes_active, classes_obsolete
+      - mappings_ncit, mappings_umls, mappings_total
+      - terms_with_ncit, terms_with_umls (coverage on active terms)
+
+    Obsolete terms contribute to class count but not to mappings (obsolete terms
+    do not get skos:exactMatch in the output).
     """
     flat_nodes = flatten_tree(tree_data)
-    classes = sum(
-        1
+    obsolete_codes = _obsolete_codes_from_tree(tree_data)
+
+    # Total classes = all codes present in the main tree + any extra obsolete codes referenced
+    # by revocations/precursors that are not present in the tree (common when using API).
+    codes_in_tree = {
+        node.get("code")
         for node in flat_nodes.values()
         if isinstance(node, dict) and node.get("code")
-    )
+    }
+    extra_obsolete = {c for c in obsolete_codes if c not in codes_in_tree}
+    classes_active = len({c for c in codes_in_tree if c not in obsolete_codes})
+    classes_obsolete = len(obsolete_codes)
+    classes = classes_active + classes_obsolete
 
-    # Count mappings with same normalization as main (strip IDs)
+    # Mappings only from active nodes (obsolete terms get no skos:exactMatch)
     mappings = get_all_mappings(tree_data)
-    ncit = sum(1 for m in mappings if m.get("target_prefix") == "NCIT")
-    umls = sum(1 for m in mappings if m.get("target_prefix") == "UMLS")
+    active_mappings = [m for m in mappings if m.get("source_id", "").replace("ONCOTREE:", "") not in obsolete_codes]
+    ncit = sum(1 for m in active_mappings if m.get("target_prefix") == "NCIT")
+    umls = sum(1 for m in active_mappings if m.get("target_prefix") == "UMLS")
+
+    # Coverage on active terms (unique term count, not mapping triple count)
+    terms_with_ncit = 0
+    terms_with_umls = 0
+    for code, node in flat_nodes.items():
+        if not isinstance(node, dict) or not node.get("code"):
+            continue
+        if code in obsolete_codes:
+            continue
+        ext = node.get("externalReferences") or {}
+        if ext.get("NCI"):
+            terms_with_ncit += 1
+        if ext.get("UMLS"):
+            terms_with_umls += 1
 
     return {
         "classes": classes,
+        "classes_active": classes_active,
+        "classes_obsolete": classes_obsolete,
         "mappings_ncit": ncit,
         "mappings_umls": umls,
-        "mappings_total": len(mappings),
+        "mappings_total": len(active_mappings),
+        "terms_with_ncit": terms_with_ncit,
+        "terms_with_umls": terms_with_umls,
     }
 
 
-def actual_from_rdf(rdf_path: Path) -> Dict[str, int]:
+def actual_from_graph(graph: Graph) -> Dict[str, int]:
     """
-    Count entities in a serialized OWL or TTL file.
+    Count entities in an in-memory RDF graph.
 
-    Returns dict with: classes, mappings_ncit, mappings_umls, mappings_total.
+    Returns dict with:
+      - classes, classes_active, classes_obsolete
+      - mappings_ncit, mappings_umls, mappings_total
+      - terms_with_ncit, terms_with_umls (coverage)
     """
-    graph = Graph()
-    suffix = rdf_path.suffix.lower()
-    if suffix == ".owl":
-        graph.parse(source=str(rdf_path), format="xml")
-    elif suffix in (".ttl", ".turtle"):
-        graph.parse(source=str(rdf_path), format="turtle")
-    else:
-        raise ValueError(f"Unsupported format: {rdf_path.suffix}")
-
     oncotree_uri_prefix = str(ONCOTREE)
     ncit_uri_prefix = str(NCIT)
     umls_uri_prefix = str(UMLS)
 
-    # OncoTree classes: (s, RDF.type, OWL.Class) with s in ONCOTREE namespace
     classes = sum(
         1
         for s in graph.subjects(RDF.type, OWL.Class)
         if str(s).startswith(oncotree_uri_prefix)
     )
-
-    # exactMatch triples by object namespace
+    classes_obsolete = sum(
+        1
+        for s in graph.subjects(RDF.type, OWL.Class)
+        if str(s).startswith(oncotree_uri_prefix) and (s, OWL.deprecated, None) in graph
+    )
+    classes_active = classes - classes_obsolete
     mappings_ncit = 0
     mappings_umls = 0
+    terms_with_ncit_set: set[str] = set()
+    terms_with_umls_set: set[str] = set()
     for s, o in graph.subject_objects(SKOS.exactMatch):
         o_str = str(o)
         if o_str.startswith(ncit_uri_prefix):
             mappings_ncit += 1
+            terms_with_ncit_set.add(str(s))
         elif o_str.startswith(umls_uri_prefix):
             mappings_umls += 1
+            terms_with_umls_set.add(str(s))
 
     return {
         "classes": classes,
+        "classes_active": classes_active,
+        "classes_obsolete": classes_obsolete,
         "mappings_ncit": mappings_ncit,
         "mappings_umls": mappings_umls,
         "mappings_total": mappings_ncit + mappings_umls,
+        "terms_with_ncit": len(terms_with_ncit_set),
+        "terms_with_umls": len(terms_with_umls_set),
     }
 
 
@@ -116,10 +169,27 @@ def verify(
         }
 
     expected = expected_from_json(tree_data)
-    actual = actual_from_rdf(rdf_path)
+    graph = Graph()
+    suffix = rdf_path.suffix.lower()
+    if suffix == ".owl":
+        graph.parse(source=str(rdf_path), format="xml")
+    elif suffix in (".ttl", ".turtle"):
+        graph.parse(source=str(rdf_path), format="turtle")
+    else:
+        raise ValueError(f"Unsupported format: {rdf_path.suffix}")
+    actual = actual_from_graph(graph)
 
     diffs = []
-    for key in ("classes", "mappings_ncit", "mappings_umls", "mappings_total"):
+    for key in (
+        "classes",
+        "classes_active",
+        "classes_obsolete",
+        "mappings_ncit",
+        "mappings_umls",
+        "mappings_total",
+        "terms_with_ncit",
+        "terms_with_umls",
+    ):
         e, a = expected[key], actual[key]
         if e != a:
             diffs.append(f"{key}: expected {e}, got {a}")
@@ -151,7 +221,7 @@ def verify_and_raise(
 def _main() -> int:
     """CLI: verify OWL/TTL entity counts match expected from same source (API or JSON file)."""
     import argparse
-    from oncotree2obo.config import ROOT_DIR
+    from oncotree2obo.config import ONCOTREE_OWL_PATH
     from oncotree2obo.parsers.oncotree_json_parser import download_oncotree_json
 
     parser = argparse.ArgumentParser(
@@ -167,11 +237,20 @@ def _main() -> int:
     )
     parser.add_argument(
         "--owl", "-o", type=Path, default=None,
-        help="OWL or TTL file (default: oncotree.owl in repo root).",
+        help="OWL or TTL file (default: mappings/oncotree.owl).",
     )
     args = parser.parse_args()
 
-    rdf_path = args.owl or (ROOT_DIR / "oncotree.owl")
+    rdf_path = args.owl or ONCOTREE_OWL_PATH
+    expected_source = "API"
+    if args.json is not None:
+        expected_source = f"JSON file: {args.json}"
+    elif args.version is not None:
+        expected_source = f"API (version={args.version})"
+
+    print("Verify inputs:")
+    print(f"  expected_from: {expected_source}")
+    print(f"  actual_from:   OWL/TTL file: {rdf_path}")
     if args.json is not None:
         result = verify(json_path=args.json, rdf_path=rdf_path)
     else:

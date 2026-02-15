@@ -4,7 +4,7 @@
 
 OncoTree is an open-source ontology developed at [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/) for standardizing cancer type diagnosis from a clinical perspective by assigning each diagnosis a unique OncoTree code.
 
-The purpose of this repository is for data transformations for ingest into Mondo. Mainly, it is for generating an `oncotree.owl` and other release artefacts.
+The purpose of this repository is for data transformations for ingest into Mondo. Mainly, it is for generating `mappings/oncotree.owl` and other release artefacts.
 
 **Homepage:** https://oncotree.mskcc.org/
 
@@ -29,15 +29,14 @@ Disclaimer: This repository and its created data artefacts are unofficial. For o
 
 Run: `make all`
 
-Running this will create new release artefacts in the root directory:
-- `oncotree.owl`: OncoTree ontologized in OWL format
-- `oncotree.sssom.tsv`: SSSOM mapping file
-- `mappings/`: Folder containing SSSOM format mappings (e.g., OncoTree → NCIT, OncoTree → MONDO)
+Running this will create new release artefacts in the `mappings/` directory:
+- `mappings/oncotree.owl`: OncoTree ontologized in OWL format
+- `mappings/oncotree.sssom.tsv`: SSSOM mapping file
+- `mappings/`: Folder containing release artefacts
 
 You can also run individual targets:
-- `make oncotree.owl`: Downloads OncoTree JSON and generates OWL file
-- `make oncotree.sssom.tsv`: Generates SSSOM mapping file from OWL
-- `make update-mappings`: Updates mappings from upstream sources
+- `make mappings/oncotree.owl`: Downloads OncoTree JSON and generates OWL file
+- `make mappings/oncotree.sssom.tsv`: Generates SSSOM mapping file from OWL
 
 ## Mappings
 
@@ -48,9 +47,9 @@ The `mappings/` folder contains SSSOM format mappings that can be found between 
 
 ## Release files
 
-- `oncotree.owl`: OncoTree ontologized in OWL format
-- `oncotree.sssom.tsv`: SSSOM mapping file
-- `mappings/`: Directory containing additional SSSOM mapping files
+- `mappings/oncotree.owl`: OncoTree ontologized in OWL format
+- `mappings/oncotree.sssom.tsv`: SSSOM mapping file
+- `mappings/`: Directory containing release artefacts
 
 Notice: These are generated based on the latest downloadable data files from the OncoTree API, updated regularly.
 

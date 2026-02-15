@@ -34,6 +34,6 @@ jobs:
         title: "${{ steps.current-time.outputs.formattedTime }}"
         prerelease: false
         files: |
-          oncotree.owl
-          oncotree.sssom.tsv
-          mappings/*.sssom.tsv
+          mappings/oncotree.owl
+          mappings/oncotree.ttl
+          mappings/oncotree.sssom.tsv

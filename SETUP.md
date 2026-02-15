@@ -22,8 +22,6 @@ oncotree-mondo/
 │   ├── parsers/
 │   │   ├── __init__.py
 │   │   └── oncotree_json_parser.py   # OncoTree JSON parser
-│   └── update_mappings.py            # Mapping update utility
-├── tests/                            # Unit tests
 ├── .gitignore
 ├── LICENSE.md
 ├── makefile                          # Build automation
@@ -44,14 +42,8 @@ oncotree-mondo/
    ```
    This will:
    - Download OncoTree JSON from the API
-   - Convert it to `oncotree.owl`
-   - Generate `oncotree.sssom.tsv`
-
-3. **Update mappings:**
-   ```bash
-   make update-mappings
-   ```
-   This generates SSSOM mapping files in the `mappings/` directory.
+   - Convert it to `mappings/oncotree.owl`
+   - Generate `mappings/oncotree.sssom.tsv`
 
 ## Key Features
 
@@ -69,10 +61,7 @@ Converts OncoTree JSON to OWL ontology with:
 - Proper ontology metadata
 
 ### 3. Mapping Extraction
-Extracts mappings from OncoTree's `externalReferences`:
-- **NCIT mappings**: From `externalReferences.NCI`
-- **UMLS mappings**: From `externalReferences.UMLS`
-- Outputs in SSSOM format for integration with Mondo
+Extracts mappings from OncoTree's `externalReferences` into the release artefacts.
 
 ## Integration with Mondo
 
@@ -81,11 +70,10 @@ This repository follows the same pattern as the OMIM ingest repository:
 1. **Input**: OncoTree JSON (from API or file)
 2. **Processing**: Convert to OWL format
 3. **Output**: 
-   - `oncotree.owl` - OWL ontology file
-   - `oncotree.sssom.tsv` - SSSOM mapping file
-   - `mappings/*.sssom.tsv` - Additional mapping files
+   - `mappings/oncotree.owl` - OWL ontology file
+   - `mappings/oncotree.sssom.tsv` - SSSOM mapping file
 
-The `oncotree.owl` file can be ingested by `mondo-ingest` along with the mapping files to create MONDO mappings.
+The `mappings/oncotree.owl` file can be ingested by `mondo-ingest` along with the mapping files to create MONDO mappings.
 
 ## Next Steps
 
@@ -95,8 +83,8 @@ The `oncotree.owl` file can be ingested by `mondo-ingest` along with the mapping
    ```
 
 2. **Review generated files:**
-   - Check `oncotree.owl` for proper OWL structure
-   - Verify `oncotree.sssom.tsv` contains expected mappings
+   - Check `mappings/oncotree.owl` for proper OWL structure
+   - Verify `mappings/oncotree.sssom.tsv` contains expected mappings
    - Review `mappings/` directory for extracted mappings
 
 3. **Create GitHub repository:**

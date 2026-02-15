@@ -30,6 +30,15 @@ oncotree_*.pretty.json
 !README.md
 !LICENSE.md
 
+# Build artefacts (mappings/)
+mappings/*.json
+mappings/*.obo
+mappings/*.owl
+mappings/*.tsv
+mappings/*.ttl
+mappings/*.txt
+!mappings/README.md
+
 # Virtual environments
 venv/
 env/
