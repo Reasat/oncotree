@@ -319,31 +319,52 @@ If SSSOM does not emit these details by default, add a small post-step summary s
 ## Automate the actions in a Makefile
 
 ```makefile
-MAPPINGS_DIR = mappings
-VERSION ?= oncotree_2025_10_03   # optional: for API --version, defaults to latest
+.PHONY: all help install verify cleanup
 
-.PHONY: all clean verify help
+# MAIN COMMANDS / GOALS ------------------------------------------------------------------------------------------------
+all: mappings/oncotree.owl mappings/oncotree.sssom.tsv
 
-all: $(MAPPINGS_DIR)/oncotree.sssom.tsv
+# build: Create new mappings/oncotree.owl
+# - OncoTree JSON is downloaded by the script at runtime
+mappings/oncotree.owl:
+	python3 -m oncotree2obo
+	make cleanup
 
-# 1. Fetch OncoTree JSON + build OWL/TTL (Python)
-$(MAPPINGS_DIR)/oncotree.owl $(MAPPINGS_DIR)/oncotree.ttl:
-	python3 -m oncotree2obo --version $(VERSION)
-	# or: python3 -m oncotree2obo --json-file path/to/source.json
-
-# 2. OWL → OBOGraphs JSON (ROBOT)
-$(MAPPINGS_DIR)/oncotree.json: $(MAPPINGS_DIR)/oncotree.owl
+# Create mapping artefact(s)
+mappings/oncotree.json: mappings/oncotree.owl
 	robot convert -i $< --format json -o $@
 
-# 3. OBOGraphs JSON → SSSOM TSV
-$(MAPPINGS_DIR)/oncotree.sssom.tsv: $(MAPPINGS_DIR)/oncotree.json
+# Create SSSOM mapping file from OWL
+mappings/oncotree.sssom.tsv: mappings/oncotree.json
 	sssom parse $< -I obographs-json -m data/metadata.sssom.yml -o $@
+	make cleanup
 
-clean:
-	rm -f $(MAPPINGS_DIR)/oncotree.json
+cleanup:
+	@rm -f mappings/oncotree.json
 
-verify: $(MAPPINGS_DIR)/oncotree.owl
+# SETUP / INSTALLATION -------------------------------------------------------------------------------------------------
+install:
+	pip install -r requirements-unlocked.txt --user --break-system-packages
+
+# Verify mappings/oncotree.owl entity counts match API (or use: oncotree2obo.verify -j FILE)
+verify: mappings/oncotree.owl
 	python3 -m oncotree2obo.verify
+
+# HELP -----------------------------------------------------------------------------------------------------------------
+help:
+	@echo "----------------------------------------"
+	@echo "	Command reference: OncoTree"
+	@echo "----------------------------------------"
+	@echo "all"
+	@echo "Creates all release artefacts.\n"
+	@echo "mappings/oncotree.owl"
+	@echo "Creates main release artefact: mappings/oncotree.owl\n"
+	@echo "mappings/oncotree.sssom.tsv"
+	@echo "Creates an SSSOM TSV of OncoTree terms.\n"
+	@echo "install"
+	@echo "Install's Python requirements.\n"
+	@echo "verify"
+	@echo "Verifies mappings/oncotree.owl entity counts match API (or use -j FILE for JSON).\n"
 ```
 
 ## Logs
