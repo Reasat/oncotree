@@ -9,7 +9,6 @@ SKOS = Namespace('http://www.w3.org/2004/02/skos/core#')
 OBO = Namespace('http://purl.obolibrary.org/obo/')
 
 # Ontology namespaces
-BIOLINK = Namespace('https://w3id.org/biolink/vocab/')
 NCIT = Namespace('http://purl.obolibrary.org/obo/NCIT_')
 UMLS = Namespace('http://linkedlifedata.com/resource/umls/id/')
 MONDO = Namespace('http://purl.obolibrary.org/obo/MONDO_')

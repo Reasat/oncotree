@@ -23,7 +23,7 @@ from rdflib.namespace import DC
 
 from oncotree2obo.config import ONCOTREE_OWL_PATH, ONCOTREE_TTL_PATH, ROOT_DIR
 from oncotree2obo.namespaces import (
-    ONCOTREE, BIOLINK, NCIT, UMLS, ONCOTREE_ONTOLOGY_IRI, OBO,
+    ONCOTREE, NCIT, UMLS, ONCOTREE_ONTOLOGY_IRI, OBO,
     IAO_0100001, OBOINOWL,
 )
 from oncotree2obo.parsers.oncotree_json_parser import (
@@ -78,7 +78,6 @@ def add_oncotree_class(graph: Graph, code: str, name: str,
     
     # Class declaration
     graph.add((class_uri, RDF.type, OWL.Class))
-    graph.add((class_uri, RDF.type, BIOLINK.Disease))
     graph.add((class_uri, RDFS.label, Literal(name)))
     
     # Add parent relationship
@@ -186,7 +185,6 @@ def oncotree2obo(
     
     # Bind namespaces
     graph.bind("oncotree", ONCOTREE)
-    graph.bind("biolink", BIOLINK)
     graph.bind("ncit", NCIT)
     graph.bind("umls", UMLS)
     graph.bind("owl", OWL)
