@@ -162,10 +162,9 @@ Code is implemented in `oncotree2obo/main.py`
 ### owl format
 
 ```xml
-<!-- OWL/RDF/XML example: Active term GNOS (revocations: AOAST, OAST) -->
+<!-- OWL/RDF/XML example: Active term GNOS (revocations: AOAST, OAST), parent: DIFG -->
   <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/GNOS">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdf:type rdf:resource="https://w3id.org/biolink/vocab/Disease"/>
     <rdfs:label>Glioma, NOS</rdfs:label>
     <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/DIFG"/>
     <rdfs:comment>Main type: Glioma</rdfs:comment>
@@ -187,10 +186,9 @@ Code is implemented in `oncotree2obo/main.py`
     <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/GNOS"/>
   </rdf:Description>
 
-  <!-- Active term CLLSLL (precursors: CLL, SLL merged into this term) -->
+  <!-- Active term CLLSLL (precursors: CLL, SLL merged into this term), parent: MBN -->
   <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/CLLSLL">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdf:type rdf:resource="https://w3id.org/biolink/vocab/Disease"/>
     <rdfs:label>Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma</rdfs:label>
     <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/MBN"/>
     <rdfs:comment>Main type: Mature B-Cell Neoplasms</rdfs:comment>
@@ -218,9 +216,8 @@ Code is implemented in `oncotree2obo/main.py`
 ### ttl format
 
 ```turtle
-# Active term GNOS (revocations: AOAST, OAST)
-oncotree:GNOS a owl:Class,
-        biolink:Disease ;
+# Active term GNOS (revocations: AOAST, OAST),  parent: DIFG 
+oncotree:GNOS a owl:Class ;
     rdfs:label "Glioma, NOS" ;
     rdfs:comment "Level: 3",
         "Main type: Glioma",
@@ -238,9 +235,8 @@ oncotree:OAST a owl:Class ;
     owl:deprecated true ;
     obo:IAO_0100001 oncotree:GNOS .
 
-# Active term CLLSLL (precursors: CLL, SLL merged into this)
-oncotree:CLLSLL a owl:Class,
-        biolink:Disease ;
+# Active term CLLSLL (precursors: CLL, SLL merged into this), parent: MBN
+oncotree:CLLSLL a owl:Class ;
     rdfs:label "Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma" ;
     rdfs:comment "Level: 5",
         "Main type: Mature B-Cell Neoplasms",
