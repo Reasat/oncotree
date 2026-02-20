@@ -4,7 +4,7 @@ From OncoTree source file to `mappings/oncotree.owl`, `mappings/oncotree.ttl`, `
 
 The sequence of actions, inputs/outputs, and how entity counts change.
 
-**Conventions:** OncoTree class IRIs use `http://purl.obolibrary.org/obo/mondo/mappings/oncotree/<CODE>` (e.g. `.../oncotree/GNOS`).
+**Conventions:** OncoTree class IRIs use `http://purl.obolibrary.org/obo/mondo/sources/oncotree/<CODE>` (e.g. `.../oncotree/GNOS`).
 
 ---
 
@@ -163,34 +163,34 @@ Code is implemented in `oncotree2obo/main.py`
 
 ```xml
 <!-- OWL/RDF/XML example: Active term GNOS (revocations: AOAST, OAST), parent: DIFG -->
-  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/GNOS">
+  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/sources/oncotree/GNOS">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label>Glioma, NOS</rdfs:label>
-    <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/DIFG"/>
+    <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/mondo/sources/oncotree/DIFG"/>
     <rdfs:comment>Main type: Glioma</rdfs:comment>
     <rdfs:comment>Tissue: CNS/Brain</rdfs:comment>
     <rdfs:comment>Level: 3</rdfs:comment>
   </rdf:Description>
 
   <!-- Obsolete terms (AOAST, OAST revoked and replaced by GNOS) -->
-  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/AOAST">
+  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/sources/oncotree/AOAST">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label>obsolete Anaplastic Oligoastrocytoma</rdfs:label>
     <owl:deprecated rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:deprecated>
-    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/GNOS"/>
+    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/sources/oncotree/GNOS"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/OAST">
+  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/sources/oncotree/OAST">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label>obsolete Oligoastrocytoma</rdfs:label>
     <owl:deprecated rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:deprecated>
-    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/GNOS"/>
+    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/sources/oncotree/GNOS"/>
   </rdf:Description>
 
   <!-- Active term CLLSLL (precursors: CLL, SLL merged into this term), parent: MBN -->
-  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/CLLSLL">
+  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/sources/oncotree/CLLSLL">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label>Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma</rdfs:label>
-    <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/MBN"/>
+    <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/mondo/sources/oncotree/MBN"/>
     <rdfs:comment>Main type: Mature B-Cell Neoplasms</rdfs:comment>
     <rdfs:comment>Tissue: Lymphoid</rdfs:comment>
     <rdfs:comment>Level: 5</rdfs:comment>
@@ -199,17 +199,17 @@ Code is implemented in `oncotree2obo/main.py`
   </rdf:Description>
 
   <!-- Obsolete terms (CLL, SLL merged and replaced by CLLSLL) -->
-  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/CLL">
+  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/sources/oncotree/CLL">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label>obsolete Chronic Lymphocytic Leukemia</rdfs:label>
     <owl:deprecated rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:deprecated>
-    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/CLLSLL"/>
+    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/sources/oncotree/CLLSLL"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/SLL">
+  <rdf:Description rdf:about="http://purl.obolibrary.org/obo/mondo/sources/oncotree/SLL">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label>obsolete Small Lymphocytic Lymphoma</rdfs:label>
     <owl:deprecated rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:deprecated>
-    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/mappings/oncotree/CLLSLL"/>
+    <obo:IAO_0100001 rdf:resource="http://purl.obolibrary.org/obo/mondo/sources/oncotree/CLLSLL"/>
   </rdf:Description>
 ```
 

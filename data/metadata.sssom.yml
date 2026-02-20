@@ -7,6 +7,6 @@ mapping_set_description: >
 license: https://creativecommons.org/licenses/by/4.0/
 creator_id: https://orcid.org/0000-0000-0000-0000
 curie_map:
-  ONCOTREE: "http://purl.obolibrary.org/obo/mondo/mappings/oncotree/"
+  ONCOTREE: "http://purl.obolibrary.org/obo/mondo/sources/oncotree/"
   NCIT: "http://purl.obolibrary.org/obo/NCIT_"
   UMLS: "http://linkedlifedata.com/resource/umls/id/"
