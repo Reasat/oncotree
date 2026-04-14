@@ -1,81 +1,51 @@
-# OncoTree Ingest
+# OncoTree
 
-## About OncoTree & this repository
+OncoTree JSON (MSKCC) preprocessed into **LinkML `OntologyDocument` YAML** and **linkml-owl** OWL for Mondo ingest.
 
-OncoTree is an open-source ontology developed at [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/) for standardizing cancer type diagnosis from a clinical perspective by assigning each diagnosis a unique OncoTree code.
-
-The purpose of this repository is for data transformations for ingest into Mondo. Mainly, it is for generating `mappings/oncotree.owl` and other release artefacts.
-
-**Homepage:** https://oncotree.mskcc.org/
-
-**Official Repository:** https://github.com/cBioPortal/oncotree
-
-Disclaimer: This repository and its created data artefacts are unofficial. For official, up-to-date OncoTree data, please visit [oncotree.mskcc.org](https://oncotree.mskcc.org).
+**Upstream:** https://oncotree.mskcc.org/ — API `https://oncotree.mskcc.org/api/tumorTypes`
 
 ## Setup
 
-### 1. Python dependencies
+1. Install [uv](https://docs.astral.sh/uv/).
+2. `uv sync`
+3. Align LinkML pins (mondo-source-ingest workaround for inlined lists): `just dependencies`
 
-#### Python installation
-- [RealPython blog install guide](https://realpython.com/installing-python/): Guide for installing on Windows or Mac
-- [Python documentation for installing on Windows](https://docs.python.org/3/using/windows.html)
-- [Python documentation for installing on Mac](https://docs.python.org/3/using/mac.html)
+## Run
 
-#### Setup virtual environment & installing packages
-1. Run: `make install`
-2. This will install all required Python dependencies
+```bash
+just build    # acquire → extract → validate → verify → data2owl
+just reports  # robot measure + top-level SPARQL (needs `robot`; needs oncotree.linkml.owl)
+just sssom    # OBOGraphs JSON → SSSOM TSV (needs `robot` + `sssom` on PATH)
+```
 
-## Running & creating release
+Full release-style run: `just release` (= `build` + `reports` + `sssom`).
 
-Run: `make all`
+Tight loop after `tmp/oncotree_raw.json` exists: `just iterate`
 
-Running this will create new release artefacts in the `mappings/` directory:
-- `mappings/oncotree.owl`: OncoTree ontologized in OWL format
-- `mappings/oncotree.sssom.tsv`: SSSOM mapping file
-- `mappings/`: Folder containing release artefacts
+Inside **ODK Docker** (robot + network), same as CI:
 
-You can also run individual targets:
-- `make mappings/oncotree.owl`: Downloads OncoTree JSON and generates OWL file
-- `make mappings/oncotree.sssom.tsv`: Generates SSSOM mapping file from OWL
+```bash
+docker run --rm -v "$PWD:/work" -w /work obolibrary/odkfull:v1.6 bash scripts/ci_inner.sh
+```
 
-## Mappings
+## Outputs
 
-The `mappings/` folder contains SSSOM format mappings that can be found between OncoTree codes and other terminologies:
-- **NCIT mappings**: Extracted from OncoTree's `externalReferences.NCI` fields
-- **UMLS mappings**: Extracted from OncoTree's `externalReferences.UMLS` fields
-- **MONDO mappings**: Created through NCIT mappings (OncoTree → NCIT → MONDO via mondo.sssom.tsv)
+| File | Description |
+|------|-------------|
+| `oncotree.linkml.yaml` | Primary artefact for Mondo ingest |
+| `oncotree.linkml.owl` | OWL from linkml-owl (OWL consumers) |
+| `oncotree.sssom.tsv` | SSSOM (OncoTree ↔ NCIT/UMLS via `skos:exactMatch`) |
+| `reports/metrics.json` | ROBOT extended metrics on `oncotree.linkml.owl` |
+| `reports/top-level-counts.tsv` | Descendant counts under grouping root(s) (see `sparql/`) |
 
-## Release files
+## Docs
 
-- `mappings/oncotree.owl`: OncoTree ontologized in OWL format
-- `mappings/oncotree.sssom.tsv`: SSSOM mapping file
-- `mappings/`: Directory containing release artefacts
-
-Notice: These are generated based on the latest downloadable data files from the OncoTree API, updated regularly.
-
-## Architecture
-
-### Core Processing Flow
-
-1. **Data Download**: Retrieves OncoTree JSON from the official API
-2. **Parsing**: Transforms JSON tree structure into RDF graph
-3. **Mapping Extraction**: Extracts external references (NCIT, UMLS) as mappings
-4. **Output Generation**: Creates OWL files and SSSOM mapping files
-
-### Key Modules
-
-**`oncotree2obo/main.py`**: Core processing logic
-- Entry point for all data transformation
-- Converts OncoTree JSON tree structure to OWL ontology
-- Extracts and manages mappings
-
-**`oncotree2obo/parsers/`**: Parsers for OncoTree data formats
-- `oncotree_json_parser.py`: Handles OncoTree JSON tree structure
-
-## Documentation
-
-- **[docs/oncotree_schema.json](docs/oncotree_schema.json)** – JSON Schema for OncoTree API response (flat list) and file format (nested tree). See [docs/README.md](docs/README.md).
+| Doc | Contents |
+|-----|----------|
+| [`docs/plan.md`](docs/plan.md) | Field mappings, ID scheme, versioning |
+| [`docs/release_notes.md`](docs/release_notes.md) | Stats and Phase 9 verification |
+| [`docs/pipeline_incidents.md`](docs/pipeline_incidents.md) | Incidents and resolutions |
 
 ## License
 
-This work is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/).
+[Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/).

@@ -1,46 +1,36 @@
-# Standard
-dev/
-data/cache/
-__pycache__/
-.idea/
-.DS_Store
+# Credentials
 .env
-*.pyc
-*.pyo
-*.pyd
-.Python
+env/.env
 
-# Specialized
-.ipynb_checkpoints/
-.git.bfg-report/
-*ignore/
+# Build artefacts (GitHub Release assets; not committed)
+oncotree.linkml.yaml
+oncotree.linkml.owl
+oncotree.sssom.tsv
 
-# Inputs (downloaded files)
-oncotree_*.json
-oncotree_*.pretty.json
-
-# Outputs
-/*.json
-/*.obo
-/*.owl
-/*.tsv
-/*.ttl
-/*.txt
-!requirements*.txt
-!README.md
-!LICENSE.md
-
-# Build artefacts (mappings/)
+# Legacy names (pre–LinkML pipeline)
 mappings/*.json
-mappings/*.obo
 mappings/*.owl
 mappings/*.tsv
 mappings/*.ttl
-mappings/*.txt
-!mappings/README.md
 
-# Virtual environments
+# Intermediates
+tmp/
+
+# Python
+*.pyc
+__pycache__/
+*.egg-info/
+.ruff_cache/
+
+# Virtual env — uv.lock IS committed
+.venv/
 venv/
-env/
-ENV/
+
+# IDE / OS
+.idea/
+.DS_Store
 .cursor/
+
+# Inputs (optional local snapshots)
+oncotree_*.json
+oncotree_*.pretty.json

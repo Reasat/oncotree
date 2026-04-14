@@ -1,0 +1,25 @@
+name: Build
+
+on:
+  pull_request:
+    paths:
+      - "justfile"
+      - "linkml/**"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "data/**"
+      - "sparql/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build in ODK (full pipeline)
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            obolibrary/odkfull:v1.6 \
+            bash -lc "bash scripts/ci_inner.sh"

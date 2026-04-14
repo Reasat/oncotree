@@ -1,0 +1,50 @@
+name: Build and release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 13 * * 3"
+  push:
+    branches: [main]
+    paths:
+      - "justfile"
+      - "linkml/**"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "data/**"
+      - "sparql/**"
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build in ODK
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            obolibrary/odkfull:v1.6 \
+            bash -lc "bash scripts/ci_inner.sh"
+      - name: Set release tag
+        id: version
+        run: echo "tag=v$(date +%Y%m%d)-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+      - name: Create release and upload assets
+        if: success() && hashFiles('oncotree.linkml.yaml') != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          files: |
+            oncotree.linkml.yaml
+            oncotree.linkml.owl
+            oncotree.sssom.tsv
+            reports/metrics.json
+            reports/top-level-counts.tsv
+          generate_release_notes: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

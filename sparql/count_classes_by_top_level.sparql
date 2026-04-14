@@ -1,0 +1,16 @@
+# Descendant class counts under OncoTree grouping roots (mondo-source-ingest pattern).
+# Replace or extend VALUES ?topLevel with additional IRIs if you add more synthetic/org roots.
+# IRI pattern: http://purl.obolibrary.org/obo/mondo/sources/oncotree/<CODE>
+
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+
+SELECT ?topLevel (COUNT(DISTINCT ?child) AS ?count)
+WHERE {
+  VALUES ?topLevel {
+    <http://purl.obolibrary.org/obo/mondo/sources/oncotree/TISSUE>
+  }
+  ?child rdfs:subClassOf+ ?topLevel .
+  ?child a owl:Class .
+}
+GROUP BY ?topLevel

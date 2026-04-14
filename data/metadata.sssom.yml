@@ -1,9 +1,8 @@
 mapping_set_id: http://purl.obolibrary.org/obo/mondo/mondo-ingest/mapping/oncotree.sssom.tsv
 mapping_set_description: >
-  The file `mappings/oncotree.sssom.tsv` is generated using the Python package `sssom`, by running the command `make mappings/oncotree.sssom.tsv` from a
-  cloned copy of the OncoTree ingest repository. For more information on data sources,
-  assumptions, and computations, refer to `README.md` or the comments at the top of `oncotree2obo/main.py` in the OncoTree
-  ingest.
+  The file `oncotree.sssom.tsv` is produced from `oncotree.linkml.owl` (linkml-owl) via
+  `robot convert` to OBOGraphs JSON and `sssom parse` (see `just sssom` / `scripts/ci_inner.sh`).
+  See `docs/plan.md` and `README.md`.
 license: https://creativecommons.org/licenses/by/4.0/
 creator_id: https://orcid.org/0000-0000-0000-0000
 curie_map:
