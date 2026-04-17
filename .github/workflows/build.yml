@@ -6,6 +6,7 @@ on:
       - "justfile"
       - "linkml/**"
       - "scripts/**"
+      - "src/**"
       - "pyproject.toml"
       - "uv.lock"
       - "data/**"

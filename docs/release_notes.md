@@ -24,9 +24,9 @@ Ontology statistics and Phase 9 verification. Update **Latest verification** whe
 
 ## Latest verification
 
-**When:** 2026-04-14 (local `just build` + `just sssom`; artefacts gitignored).
+**When:** 2026-04-14 — full pipeline via `scripts/ci_inner.sh` inside `obolibrary/odkfull:v1.6` (same commands as GitHub Actions).
 
-**Upstream:** `oncotree_latest_stable (2025-10-03)` from `/api/versions`.
+**Upstream:** `oncotree_latest_stable (2025-10-03)` from `/api/versions` (also the `version` field in `oncotree.linkml.yaml`).
 
 | Metric | Value |
 |--------|------:|
@@ -35,6 +35,10 @@ Ontology statistics and Phase 9 verification. Update **Latest verification** whe
 | Broken parent / term_replaced_by / consider refs | 0 |
 | `linkml-validate` | PASS |
 | `scripts/verify.py` | PASS |
+
+**ROBOT (`oncotree.linkml.owl`):** extended `robot measure` — `class_count` 898, `axiom_count` 5890, `signature_entity_count` 906. The YAML term count (913) is the ingest contract; OWL class count can differ slightly from how linkml-owl emits classes versus terms in the document.
+
+**SPARQL (`reports/top-level-counts.tsv`):** descendants under `ONCOTREE:TISSUE` — 897.
 
 **Mappings (SSSOM):** rows derived from `skos:exactMatch` on active terms (NCIT + UMLS).
 

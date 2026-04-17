@@ -26,7 +26,7 @@
 | **6 — Validate & iterate** | `just validate`, `just iterate` | **Done** |
 | **7 — Derive OWL** | `just data2owl` → `oncotree.linkml.owl` | **Done** |
 | **8 — CI & release** | PR: `.github/workflows/build.yml`. Release: `.github/workflows/release.yml` — `workflow_dispatch`, **weekly** cron `0 13 * * 3` (UTC), **push to `main`** on listed paths; assets include YAML, OWL, SSSOM, **`reports/metrics.json`**, **`reports/top-level-counts.tsv`** | **Done** — schedule kept for recurring upstream drops |
-| **9 — Verify** | `scripts/verify.py --yaml oncotree.linkml.yaml`; results in `docs/release_notes.md` | **Done** |
+| **9 — Verify** | `scripts/verify.py --yaml oncotree.linkml.yaml`; results in `docs/release_notes.md` | **Done** — re-run `scripts/ci_inner.sh` in `obolibrary/odkfull:v1.6` on 2026-04-14: PASS |
 
 ---
 

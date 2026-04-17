@@ -1,5 +1,10 @@
 # Pipeline incidents
 
+## 2026-04-14 — mondo-source-ingest-update (re-verify)
+
+- Re-ran **`scripts/ci_inner.sh`** in **`obolibrary/odkfull:v1.6`** end-to-end: acquire → validate → verify → `linkml-owl` → ROBOT reports → SSSOM; all steps PASS. Refreshed **`docs/release_notes.md`** (Latest verification + ROBOT / SPARQL numbers).
+- **CI:** added **`src/**`** to `paths` in `.github/workflows/build.yml` and `release.yml` so changes under `src/oncotree/` (datamodel, package) trigger PR builds and release-path runs.
+
 ## 2026-04-14 — ROBOT `reports/` (QC parity)
 
 - Added **`reports/`** with `metrics.json` (extended `robot measure`) and **`top-level-counts.tsv`** (`sparql/count_classes_by_top_level.sparql` — counts under `TISSUE`), **`just reports`**, **`scripts/ci_inner.sh`** + release asset uploads. Single OWL input (no mirror/transform/final trio).
